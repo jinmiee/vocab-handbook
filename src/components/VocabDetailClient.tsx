@@ -112,7 +112,7 @@ export default function VocabDetailClient({
   const isNeedReview = store.needsReview.includes(currentVocab.id);
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 min-h-screen pb-24 relative">
+    <div className="flex-1 flex flex-col bg-slate-50 min-h-dvh pb-24 relative overflow-visible">
       {/* 상단 네비게이션 헤더 */}
       <div className="bg-white px-5 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-30">
         <button
@@ -148,8 +148,8 @@ export default function VocabDetailClient({
       </div>
 
       {/* 단어 상세 카드 */}
-      <div className="p-5 flex-1 flex flex-col space-y-5">
-        <div className="bg-white rounded-3xl p-6.5 shadow-sm border border-slate-100 flex-1 flex flex-col justify-between">
+      <div className="p-5 flex flex-col space-y-5">
+        <div className="bg-white rounded-3xl p-6.5 shadow-sm border border-slate-100 flex flex-col min-h-[400px] h-auto overflow-visible">
           <div className="space-y-4">
             {/* 키워드 */}
             <h2 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">
@@ -165,9 +165,9 @@ export default function VocabDetailClient({
             </div>
 
             {/* 상세 설명 */}
-            <div className="pt-2 text-slate-600 leading-relaxed font-medium">
+            <div className="pt-2 text-slate-600 leading-relaxed font-medium overflow-visible">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">상세설명</span>
-              <div className="mt-1 space-y-1">
+              <div className="mt-1 space-y-1 whitespace-pre-line break-words overflow-visible">
                 {renderDetailContent(currentVocab.detail)}
               </div>
             </div>

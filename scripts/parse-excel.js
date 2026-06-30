@@ -3,29 +3,53 @@ const path = require('path');
 const crypto = require('crypto');
 const XLSX = require('xlsx');
 
-// 엑셀 파일 경로
-const excelFilePath = path.join(__dirname, '../단어장_진미경.xlsx');
-const outputDir = path.join(__dirname, '../src/data');
+const excelFileName = '단어장_진미경.xlsx';
+const excelFilePath = path.join(__dirname, '..', excelFileName);
+const outputDir = path.join(__dirname, '..', 'src', 'data');
 const outputFilePath = path.join(outputDir, 'vocab.json');
 
-// 컬럼명 매핑 룰 (소문자로 변환하여 비교)
-const KEYWORD_ALIASES = ['키워드', '단어', '용어', 'term', 'word', 'name', 'key', 'keyword', 'zr'];
-const SUMMARY_ALIASES = ['한줄설명', '요약', '정의', 'summary', 'description', 'define', 'definition', '한 줄 설명'];
-const DETAIL_ALIASES = ['상세설명', '상세 설명', '설명', '상세', 'detail', 'explanation', 'content', '상세내용'];
+const normalizeHeader = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '');
+
+const KEYWORD_ALIASES = ['zr', '단어', '용어', '키워드', 'term', 'word', 'name', 'key', 'keyword'];
+const SUMMARY_ALIASES = ['한줄설명', '한줄 설명', '요약', 'summary', 'shortdescription', 'short description'];
+const DETAIL_ALIASES = ['상세설명', '상세 설명', 'detail', 'description', 'detaileddescription', 'detailed description', '상세내용'];
+const DETAIL_FALLBACK_ALIASES = ['설명'];
 const CATEGORY_ALIASES = ['카테고리', '구분', 'category', 'sheet', 'classification'];
 
-function findMappedKey(row, aliases) {
-  const keys = Object.keys(row);
-  for (const key of keys) {
-    const cleanKey = key.trim().toLowerCase().replace(/\s+/g, '');
-    for (const alias of aliases) {
-      const cleanAlias = alias.toLowerCase().replace(/\s+/g, '');
-      if (cleanKey === cleanAlias || cleanKey.includes(cleanAlias)) {
-        return key;
-      }
-    }
-  }
-  return null;
+function findExactMappedKey(row, aliases) {
+  const exactAliases = aliases.map(normalizeHeader);
+  return Object.keys(row).find((key) => exactAliases.includes(normalizeHeader(key))) ?? null;
+}
+
+function findPartialMappedKey(row, aliases) {
+  const partialAliases = aliases.map(normalizeHeader);
+
+  return (
+    Object.keys(row).find((key) => {
+      const cleanKey = normalizeHeader(key);
+      return partialAliases.some((alias) => alias && cleanKey.includes(alias));
+    }) ?? null
+  );
+}
+
+function findMappedKey(row, aliases, fallbackAliases = []) {
+  const exactMatch = findExactMappedKey(row, aliases);
+  if (exactMatch) return exactMatch;
+
+  const partialMatch = findPartialMappedKey(row, aliases);
+  if (partialMatch) return partialMatch;
+
+  if (fallbackAliases.length === 0) return null;
+  return findPartialMappedKey(row, fallbackAliases);
+}
+
+function getCellValue(sheet, rowIndex, columnIndex) {
+  const cell = sheet[XLSX.utils.encode_cell({ r: rowIndex, c: columnIndex })];
+  return cell && cell.v !== undefined ? String(cell.v).trim() : '';
 }
 
 function parseExcel() {
@@ -41,68 +65,88 @@ function parseExcel() {
   workbook.SheetNames.forEach((sheetName) => {
     const sheet = workbook.Sheets[sheetName];
     if (!sheet || !sheet['!ref']) {
-      console.log(`Sheet [${sheetName}]: Empty sheet (no cells). Skipping.`);
+      console.log(`Sheet [${sheetName}]: empty sheet. Skipping.`);
       return;
     }
 
+    const range = XLSX.utils.decode_range(sheet['!ref']);
+    const headers = [];
+    for (let col = range.s.c; col <= range.e.c; col += 1) {
+      headers.push(getCellValue(sheet, range.s.r, col) || `COLUMN_${col}`);
+    }
+    console.log(`[Sheet: ${sheetName}] headers:`, headers);
+
     const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-    console.log(`Parsing sheet [${sheetName}]: Found ${rows.length} rows`);
+    console.log(`Parsing sheet [${sheetName}]: found ${rows.length} rows`);
+    if (rows.length === 0) return;
 
-    rows.forEach((row, index) => {
-      const keys = Object.keys(row);
-      if (keys.length === 0) return;
+    const firstRow = rows[0];
+    let keywordCol = findMappedKey(firstRow, KEYWORD_ALIASES);
+    const summaryCol = findMappedKey(firstRow, SUMMARY_ALIASES);
+    let detailCol = findMappedKey(firstRow, DETAIL_ALIASES, DETAIL_FALLBACK_ALIASES);
+    const categoryCol = findMappedKey(firstRow, CATEGORY_ALIASES);
 
-      // 키워드, 한줄설명, 상세설명 컬럼 매핑 찾기
-      let keywordCol = findMappedKey(row, KEYWORD_ALIASES);
-      
-      // 만약 키워드 매핑을 찾지 못했다면 첫 번째 컬럼을 키워드로 폴백
-      if (!keywordCol && keys.length > 0) {
-        keywordCol = keys[0];
-      }
+    if (!keywordCol) {
+      keywordCol = Object.keys(firstRow)[0] ?? null;
+    }
 
-      const summaryCol = findMappedKey(row, SUMMARY_ALIASES);
-      const detailCol = findMappedKey(row, DETAIL_ALIASES);
-      const categoryCol = findMappedKey(row, CATEGORY_ALIASES);
+    const cColumnHeader = headers[2] ?? null;
+    if (normalizeHeader(cColumnHeader) === normalizeHeader('상세 설명')) {
+      detailCol = cColumnHeader;
+    }
 
-      const rawKeyword = keywordCol ? String(row[keywordCol]).trim() : '';
-      const rawSummary = summaryCol ? String(row[summaryCol]).trim() : '';
-      const rawDetail = detailCol ? String(row[detailCol]).trim() : '';
-      
-      // 시트명 또는 별도 카테고리 컬럼 사용
+    console.log(`[Sheet: ${sheetName}] mapped columns:`, {
+      keyword: keywordCol,
+      summary: summaryCol,
+      detail: detailCol,
+      category: categoryCol,
+    });
+
+    rows.forEach((row) => {
+      const rawKeyword = keywordCol ? String(row[keywordCol] ?? '').trim() : '';
+      const rawSummary = summaryCol ? String(row[summaryCol] ?? '').trim() : '';
+      const rawDetail = detailCol ? String(row[detailCol] ?? '').trim() : '';
+
       let category = sheetName.trim();
       if (categoryCol && row[categoryCol]) {
         category = String(row[categoryCol]).trim();
       }
 
-      // 키워드가 비어있는 행은 건너뜀
-      if (!rawKeyword) {
-        return;
-      }
+      if (!rawKeyword) return;
 
-      // 안정적인 ID 생성 (카테고리 + 키워드 기반 MD5 해시의 앞 12자리)
-      const inputStr = `${category}::${rawKeyword}`;
-      const id = crypto.createHash('md5').update(inputStr).digest('hex').substring(0, 12);
+      const id = crypto.createHash('md5').update(`${category}::${rawKeyword}`).digest('hex').substring(0, 12);
 
       vocabularyList.push({
         id,
         keyword: rawKeyword,
-        summary: rawSummary || `${rawKeyword}에 대한 설명입니다.`,
-        detail: rawDetail || rawSummary || `${rawKeyword}에 대한 상세 설명이 없습니다.`,
-        category: category,
+        summary: rawSummary || `${rawKeyword}에 대한 한줄설명입니다.`,
+        detail: rawDetail || `${rawKeyword}에 대한 상세 설명이 없습니다.`,
+        category,
       });
     });
   });
 
   console.log(`Parsing complete. Total valid terms: ${vocabularyList.length}`);
 
-  // 출력 폴더 생성
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // JSON 파일로 저장
   fs.writeFileSync(outputFilePath, JSON.stringify(vocabularyList, null, 2), 'utf-8');
   console.log(`Saved vocab data to: ${outputFilePath}`);
+
+  const sdlcItem = vocabularyList.find((item) => item.keyword && item.keyword.includes('SDLC'));
+  if (sdlcItem) {
+    console.log('\n==================================================');
+    console.log('=== SDLC validation ===');
+    console.log(`keyword: ${sdlcItem.keyword.replace(/\n/g, ' ')}`);
+    console.log(`summary (${sdlcItem.summary.length} chars): ${sdlcItem.summary}`);
+    console.log(`detail (${sdlcItem.detail.length} chars):\n${sdlcItem.detail}`);
+    console.log(`summary/detail identical: ${sdlcItem.summary === sdlcItem.detail}`);
+    console.log('==================================================\n');
+  } else {
+    console.log('\n[Warning] SDLC item was not found.\n');
+  }
 }
 
 parseExcel();
