@@ -87,6 +87,9 @@ export interface QuizOption {
   id: string;
   text: string;
   isCorrect: boolean;
+  // 오답 해설에 쓰기 위한 원본 단어 참조. ox 문제처럼 보기가 단어와 직접
+  // 대응되지 않는 경우도 있어 선택적으로 둔다.
+  item?: VocabItem;
 }
 
 // 정답과 함께 보여줄 오답 보기를 전체 단어 풀에서 무작위로 뽑는다.
@@ -102,6 +105,7 @@ export function buildQuizOptions(correctItem: VocabItem, distractors: VocabItem[
     id: item.id,
     text: textOf(item),
     isCorrect: item.id === correctItem.id,
+    item,
   }));
 }
 

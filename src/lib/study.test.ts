@@ -282,7 +282,7 @@ describe('pickDistractors / buildQuizOptions', () => {
     const options = buildQuizOptions(correct, distractors, (item) => item.keyword);
 
     expect(options).toHaveLength(4);
-    expect(options.filter((option) => option.isCorrect)).toEqual([{ id: correct.id, text: correct.keyword, isCorrect: true }]);
+    expect(options.filter((option) => option.isCorrect)).toEqual([{ id: correct.id, text: correct.keyword, isCorrect: true, item: correct }]);
     expect(new Set(options.map((option) => option.id)).size).toBe(4);
   });
 
