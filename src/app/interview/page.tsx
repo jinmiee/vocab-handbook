@@ -105,66 +105,70 @@ export default function InterviewPracticePage() {
   }
 
   return (
-    <main className="flex-1 bg-slate-50 dark:bg-slate-900 p-5 space-y-4 pb-24 min-h-screen">
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <p className="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest">Interview</p>
-          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">면접 질문 연습</h1>
-        </div>
-        <Link href="/quiz" className="text-xs font-black text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-3 py-2 active:scale-95 transition-all">
-          퀴즈
-        </Link>
-      </div>
-
+    <main className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 p-5 space-y-4 pb-24 min-h-screen justify-between">
       {!sessionStarted && (
-        <section className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 space-y-5">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">카테고리</span>
-              <select
-                value={selectedCategory}
-                onChange={(event) => setSelectedCategory(event.target.value)}
-                className="w-full text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">전체</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">연습 대상</span>
-              <select
-                value={selectedTarget}
-                onChange={(event) => setSelectedTarget(event.target.value as PracticeTarget)}
-                className="w-full text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.entries(targetLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <div className="flex-grow flex flex-col justify-center space-y-6">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">면접 질문 연습</h1>
+            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 max-w-[240px] mx-auto leading-relaxed">배운 용어를 직접 설명해보며 면접 답변 실력을 점검해보세요.</p>
           </div>
 
-          <div className="bg-blue-50/60 dark:bg-blue-950/40 rounded-2xl p-4 border border-blue-100 dark:border-blue-800/60">
-            <p className="text-xs font-black text-blue-600 dark:text-blue-400">선택된 단어 {filteredItems.length}개</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">한 번에 최대 10개씩 면접 질문 카드로 연습합니다.</p>
-          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 space-y-5">
+            <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-900 rounded-2xl p-1 border border-slate-100 dark:border-slate-700">
+              <Link href="/quiz" className="text-slate-500 dark:text-slate-400 rounded-xl py-2.5 text-xs font-black text-center active:scale-95 transition-all">
+                객관식 퀴즈
+              </Link>
+              <button className="bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm rounded-xl py-2.5 text-xs font-black">면접 질문</button>
+            </div>
 
-          <button onClick={startSession} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-black py-4 rounded-2xl shadow-sm transition-all active:scale-[0.98] text-sm">
-            면접 연습 시작하기
-          </button>
-        </section>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">카테고리</span>
+                <select
+                  value={selectedCategory}
+                  onChange={(event) => setSelectedCategory(event.target.value)}
+                  className="w-full text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl px-3 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">전체</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">연습 대상</span>
+                <select
+                  value={selectedTarget}
+                  onChange={(event) => setSelectedTarget(event.target.value as PracticeTarget)}
+                  className="w-full text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl px-3 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {Object.entries(targetLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="bg-blue-50/60 dark:bg-blue-950/40 rounded-2xl p-4 border border-blue-100 dark:border-blue-800/60">
+              <p className="text-xs font-black text-blue-600 dark:text-blue-400">선택된 단어 {filteredItems.length}개</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">한 번에 최대 10개씩 면접 질문 카드로 연습합니다.</p>
+            </div>
+
+            <button onClick={startSession} className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-black py-4 rounded-2xl shadow-md transition-all active:scale-[0.98] text-sm">
+              면접 연습 시작하기
+            </button>
+          </div>
+        </div>
       )}
 
       {sessionStarted && currentItem && practice && (
-        <section className="space-y-4">
-          <div className="flex justify-between items-center text-xs font-black text-slate-400 dark:text-slate-500 px-1">
+        <section className="flex-grow flex flex-col space-y-4">
+          <div className="flex justify-between items-center text-xs font-black text-slate-400 dark:text-slate-500 pt-3 px-1">
             <span>
               질문 {currentIndex + 1} / {practiceItems.length}
             </span>
