@@ -156,6 +156,12 @@ export default function VocabDetailClient({ currentVocab, prevVocab, nextVocab, 
               <p className="text-slate-700 dark:text-slate-300 text-sm font-bold leading-relaxed mt-1">{currentVocab.summary}</p>
             </div>
 
+            {/* 상세 설명 */}
+            <div className="pt-2 text-slate-600 dark:text-slate-300 leading-relaxed font-medium overflow-visible">
+              <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wide">상세설명</span>
+              <div className="mt-1 space-y-1 whitespace-pre-line break-words overflow-visible">{renderDetailContent(currentVocab.detail)}</div>
+            </div>
+
             {/* 복습 스케줄 */}
             <div className="bg-orange-50/60 dark:bg-orange-950/40 rounded-2xl p-4 border border-orange-100 dark:border-orange-800/60">
               <div className="flex justify-between items-center gap-3">
@@ -168,12 +174,6 @@ export default function VocabDetailClient({ currentVocab, prevVocab, nextVocab, 
                   <p>오답 {schedule?.wrongCount ?? 0}회</p>
                 </div>
               </div>
-            </div>
-
-            {/* 상세 설명 */}
-            <div className="pt-2 text-slate-600 dark:text-slate-300 leading-relaxed font-medium overflow-visible">
-              <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wide">상세설명</span>
-              <div className="mt-1 space-y-1 whitespace-pre-line break-words overflow-visible">{renderDetailContent(currentVocab.detail)}</div>
             </div>
           </div>
 

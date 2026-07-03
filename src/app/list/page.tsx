@@ -7,6 +7,7 @@ import vocabData from 'src/data/vocab.json';
 import { getCategories, getCategoryLabel, sortVocabItems, type VocabSortOption } from 'src/lib/study';
 
 const LIST_SCROLL_STORAGE_KEY = 'vocab_list_scroll_position';
+const LIST_FILTERS_STORAGE_KEY = 'vocab_list_filters';
 // 단어 수가 많아질수록 필터링된 결과를 한 번에 전부 DOM에 렌더링하면 스크롤이 무거워지므로,
 // 한 번에 이만큼만 렌더링하고 스크롤이 하단에 닿을 때마다 더 불러온다.
 const PAGE_SIZE = 40;
@@ -36,7 +37,6 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 export default function List() {
   const store = useVocabStore();
-  const didRestoreScroll = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isCategoryExpanded, setIsCategoryExpanded] = useState(false);
@@ -104,31 +104,87 @@ export default function List() {
     setSelectedCategories((prev) => (prev.includes(cat) ? prev.filter((x) => x !== cat) : [...prev, cat]));
   };
 
+  // 단어 상세 페이지에 갔다가 뒤로 왔을 때 이 페이지가 새로 마운트되면서 검색어/카테고리 등
+  // 필터 상태(useState)가 초기값으로 리셋된다. 세션에 저장해두고 마운트 시 복원한다.
+  // 첫 실행(마운트 직후)에는 복원만 하고 저장은 건너뛰어, 방금 복원한 값을 기본값으로 덮어쓰지 않게 한다.
+  const hasRestoredFiltersRef = useRef(false);
   useEffect(() => {
-    if (!store.isInitialized || didRestoreScroll.current) return;
+    if (!hasRestoredFiltersRef.current) {
+      hasRestoredFiltersRef.current = true;
 
-    const saved = sessionStorage.getItem(LIST_SCROLL_STORAGE_KEY);
-    if (!saved) return;
-
-    try {
-      const parsed = JSON.parse(saved) as { y?: number };
-      if (typeof parsed.y !== 'number') return;
-
-      didRestoreScroll.current = true;
-      // 저장된 위치까지 스크롤하려면 그 지점까지의 항목이 전부 렌더링돼 있어야 한다.
-      // sessionStorage를 읽어 스크롤을 복원하는 것 자체가 effect로만 할 수 있는 작업이라
-      // 그 안에서 필요한 setState까지 함께 처리한다.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setVisibleCount(filteredVocab.length);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: parsed.y, left: 0, behavior: 'instant' });
-        });
-      });
-    } catch (error) {
-      console.error('Failed to restore list scroll position:', error);
+      const saved = sessionStorage.getItem(LIST_FILTERS_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved) as {
+            searchQuery?: string;
+            selectedCategories?: string[];
+            showOnlyFavorites?: boolean;
+            learningFilter?: string;
+            sortOption?: string;
+          };
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          if (typeof parsed.searchQuery === 'string') setSearchQuery(parsed.searchQuery);
+          if (Array.isArray(parsed.selectedCategories)) setSelectedCategories(parsed.selectedCategories);
+          if (typeof parsed.showOnlyFavorites === 'boolean') setShowOnlyFavorites(parsed.showOnlyFavorites);
+          if (parsed.learningFilter === 'all' || parsed.learningFilter === 'memorized' || parsed.learningFilter === 'review' || parsed.learningFilter === 'new') {
+            setLearningFilter(parsed.learningFilter);
+          }
+          if (parsed.sortOption === 'default' || parsed.sortOption === 'alphabetical' || parsed.sortOption === 'recentlyAdded' || parsed.sortOption === 'mostWrong') {
+            setSortOption(parsed.sortOption);
+          }
+        } catch (error) {
+          console.error('Failed to restore list filters:', error);
+        }
+      }
+      return;
     }
-  }, [store.isInitialized, filteredVocab.length]);
+
+    sessionStorage.setItem(
+      LIST_FILTERS_STORAGE_KEY,
+      JSON.stringify({ searchQuery, selectedCategories, showOnlyFavorites, learningFilter, sortOption }),
+    );
+  }, [searchQuery, selectedCategories, showOnlyFavorites, learningFilter, sortOption]);
+
+  // 뒤로가기 시 이 페이지가 새로 마운트되지 않고 그대로 재사용되는 경우가 있어,
+  // 마운트 시점의 effect만으로는 스크롤 복원이 안 될 수 있다. 실제 뒤로가기/앞으로가기를
+  // 의미하는 popstate 이벤트에도 동일한 복원 로직을 걸어 항상 동작하도록 한다.
+  const filteredVocabLengthRef = useRef(filteredVocab.length);
+  useEffect(() => {
+    filteredVocabLengthRef.current = filteredVocab.length;
+  });
+
+  useEffect(() => {
+    function restoreScroll() {
+      const saved = sessionStorage.getItem(LIST_SCROLL_STORAGE_KEY);
+      if (!saved) return;
+
+      try {
+        const parsed = JSON.parse(saved) as { y?: number };
+        if (typeof parsed.y !== 'number') return;
+
+        // 한 번 복원한 위치를 다시 쓰지 않도록 즉시 제거한다.
+        sessionStorage.removeItem(LIST_SCROLL_STORAGE_KEY);
+        // 저장된 위치까지 스크롤하려면 그 지점까지의 항목이 전부 렌더링돼 있어야 한다.
+        setVisibleCount((prev) => Math.max(prev, filteredVocabLengthRef.current));
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // globals.css의 overflow-x: hidden 규칙 때문에 body가 window가 아닌
+            // 독자적인 스크롤 컨테이너가 되므로 body를 직접 스크롤해야 한다.
+            document.body.scrollTo({ top: parsed.y, left: 0, behavior: 'instant' });
+          });
+        });
+      } catch (error) {
+        console.error('Failed to restore list scroll position:', error);
+      }
+    }
+
+    if (store.isInitialized) {
+      restoreScroll();
+    }
+
+    window.addEventListener('popstate', restoreScroll);
+    return () => window.removeEventListener('popstate', restoreScroll);
+  }, [store.isInitialized]);
 
   // 목록 하단의 sentinel이 보이면 다음 페이지 분량을 더 렌더링한다.
   useEffect(() => {
@@ -155,7 +211,7 @@ export default function List() {
       LIST_SCROLL_STORAGE_KEY,
       JSON.stringify({
         id,
-        y: window.scrollY,
+        y: document.body.scrollTop,
       }),
     );
   };
