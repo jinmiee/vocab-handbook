@@ -11,14 +11,7 @@ export default function Navigation() {
       label: '홈',
       path: '/',
       icon: (active: boolean) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={active ? 2.5 : 1.5}
-          stroke={active ? '#3b82f6' : '#64748b'}
-          className="w-6 h-6"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={active ? 2.5 : 1.5} stroke={active ? '#3b82f6' : '#64748b'} className="w-6 h-6">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -31,14 +24,7 @@ export default function Navigation() {
       label: '단어장',
       path: '/list',
       icon: (active: boolean) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={active ? 2.5 : 1.5}
-          stroke={active ? '#3b82f6' : '#64748b'}
-          className="w-6 h-6"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={active ? 2.5 : 1.5} stroke={active ? '#3b82f6' : '#64748b'} className="w-6 h-6">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -51,19 +37,8 @@ export default function Navigation() {
       label: '카드',
       path: '/card',
       icon: (active: boolean) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={active ? 2.5 : 1.5}
-          stroke={active ? '#3b82f6' : '#64748b'}
-          className="w-6 h-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6.429 9.75L2.25 12l4.179 2.25m11.142 0L21.75 12l-4.179-2.25M12 5.25L15 8.25M12 5.25L9 8.25M12 5.25v13.5M12 18.75l-3-3m3 3l3-3"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={active ? 2.5 : 1.5} stroke={active ? '#3b82f6' : '#64748b'} className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m11.142 0L21.75 12l-4.179-2.25M12 5.25L15 8.25M12 5.25L9 8.25M12 5.25v13.5M12 18.75l-3-3m3 3l3-3" />
         </svg>
       ),
     },
@@ -71,19 +46,8 @@ export default function Navigation() {
       label: '퀴즈',
       path: '/quiz',
       icon: (active: boolean) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={active ? 2.5 : 1.5}
-          stroke={active ? '#3b82f6' : '#64748b'}
-          className="w-6 h-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={active ? 2.5 : 1.5} stroke={active ? '#3b82f6' : '#64748b'} className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
         </svg>
       ),
     },
@@ -91,14 +55,7 @@ export default function Navigation() {
       label: '통계',
       path: '/stats',
       icon: (active: boolean) => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={active ? 2.5 : 1.5}
-          stroke={active ? '#3b82f6' : '#64748b'}
-          className="w-6 h-6"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={active ? 2.5 : 1.5} stroke={active ? '#3b82f6' : '#64748b'} className="w-6 h-6">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -110,30 +67,15 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-md w-full bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-around items-center py-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-50">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-md w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-700 flex justify-around items-center py-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-50 select-none">
       {navItems.map((item) => {
         // active 여부: 루트('/')일 때는 정확히 일치, 그 외에는 prefix 매치
-        const isActive =
-          item.path === '/'
-            ? pathname === '/'
-            : pathname.startsWith(item.path);
+        const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
 
         return (
-          <Link
-            key={item.path}
-            href={item.path}
-            className="flex flex-col items-center justify-center flex-1 py-1"
-          >
-            <div className="mb-0.5 transition-transform duration-200 active:scale-90">
-              {item.icon(isActive)}
-            </div>
-            <span
-              className={`text-[10px] font-medium transition-colors ${
-                isActive ? 'text-blue-500 font-semibold' : 'text-slate-500'
-              }`}
-            >
-              {item.label}
-            </span>
+          <Link key={item.path} href={item.path} className="flex flex-col items-center justify-center flex-1 py-1">
+            <div className="mb-0.5 transition-transform duration-200 active:scale-90">{item.icon(isActive)}</div>
+            <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-blue-500 dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}>{item.label}</span>
           </Link>
         );
       })}

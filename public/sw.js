@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vocab-handbook-v1';
+const CACHE_NAME = 'vocab-handbook-mr504lw6';
 const ASSETS_TO_CACHE = [
   '/',
   '/icon-192.png',

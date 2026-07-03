@@ -2,9 +2,19 @@
 
 import { useEffect } from 'react';
 
+declare global {
+  interface Window {
+    workbox?: unknown;
+  }
+}
+
 export default function ServiceWorkerRegister() {
   useEffect(() => {
-    if ('serviceWorker' in navigator && (window as any).workbox === undefined) {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      'serviceWorker' in navigator &&
+      window.workbox === undefined
+    ) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')

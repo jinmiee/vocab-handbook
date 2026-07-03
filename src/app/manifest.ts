@@ -1,12 +1,13 @@
 import { MetadataRoute } from 'next';
+import { APP_DESCRIPTION, APP_SHORT_TITLE, APP_TITLE } from 'src/config';
 
 export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '진미경 개발 단어장',
-    short_name: '진미경 단어장',
-    description: '아이폰 모바일 학습용 개발 용어 단어장',
+    name: APP_TITLE,
+    short_name: APP_SHORT_TITLE,
+    description: APP_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
